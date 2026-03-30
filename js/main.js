@@ -59,13 +59,22 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   // === SMOOTH SCROLL ===
-  document.querySelectorAll('a[href^="#"]').forEach(a=>{
-    a.addEventListener('click', (e)=>{
-      const target = document.querySelector(a.getAttribute('href'));
-      if(target){
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      const href = a.getAttribute('href');
+      if (href === "#" || href === "#!") return; // Ignore empty links
+
+      const target = document.querySelector(href);
+      if (target) {
         e.preventDefault();
-        const headerHeight = document.querySelector('.site-header').offsetHeight;
-        target.scrollIntoView({behavior:'smooth', block:'start'});
+        const headerHeight = header.offsetHeight;
+        const elementPosition = target.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerHeight;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth"
+        });
       }
     });
   });
@@ -93,7 +102,14 @@ document.addEventListener('DOMContentLoaded', function(){
   // === LIGHTBOX ===
   const modal = document.createElement('div');
   modal.className = 'lightbox';
-  modal.innerHTML = '<div class="lightbox-inner"><img src="" alt=""/><button class="close">✕</button></div>';
+  modal.innerHTML = `
+  <div class="lightbox-inner">
+    <button class="lightbox-nav prev" aria-label="Previous">❮</button>
+    <img src="" alt=""/>
+    <button class="lightbox-nav next" aria-label="Next">❯</button>
+    <button class="close" aria-label="Close">✕</button>
+  </div>
+  `;
   document.body.appendChild(modal);
   const modalImg = modal.querySelector('img');
   const closeBtn = modal.querySelector('.close');
@@ -107,13 +123,21 @@ document.addEventListener('DOMContentLoaded', function(){
   
   function closeLightbox(){
     modal.classList.remove('open');
-    modalImg.src = '';
-    document.body.style.overflow = '';
+    // Small delay before clearing src prevents a "flicker" during the transition
+    setTimeout(() => { modalImg.src = ''; }, 300);
+    document.body.style.overflow = ''; // Restores scrolling
   }
   
   closeBtn.addEventListener('click', closeLightbox);
-  modal.addEventListener('click', function(e){ 
-    if(e.target===modal) closeLightbox(); 
+  
+  // Close on background click
+  modal.addEventListener('click', (e) => { 
+    if(e.target === modal) closeLightbox(); 
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape' && modal.classList.contains('open')) closeLightbox();
   });
   
   // Gallery click handlers
@@ -128,7 +152,43 @@ document.addEventListener('DOMContentLoaded', function(){
   // === TESTIMONIALS CAROUSEL ===
   const slides = document.querySelectorAll('.testimonial-card');
   const dots = document.querySelectorAll('.dot');
-  let currentSlide = 0;
+  let currentGalleryIndex = 0;
+  const galleryImages = Array.from(document.querySelectorAll('.gallery-item img'));
+
+  function updateLightboxImage(index) {
+    currentGalleryIndex = (index + galleryImages.length) % galleryImages.length;
+    const img = galleryImages[currentGalleryIndex];
+    const fullResSource = img.getAttribute('data-base') || img.src;
+    modalImg.src = fullResSource;
+    modalImg.alt = img.alt;
+  }
+
+  // Add event listeners to the new buttons
+  modal.querySelector('.prev').addEventListener('click', (e) => {
+    e.stopPropagation();
+    updateLightboxImage(currentGalleryIndex - 1);
+  });
+
+  modal.querySelector('.next').addEventListener('click', (e) => {
+    e.stopPropagation();
+    updateLightboxImage(currentGalleryIndex + 1);
+  });
+
+  // Update your existing openLightbox logic to set the index
+  document.querySelectorAll('.gallery-item').forEach((item, index) => {
+    item.addEventListener('click', () => {
+      currentGalleryIndex = index;
+      const img = item.querySelector('img');
+      openLightbox(img.getAttribute('data-base') || img.src, img.alt);
+    });
+  });
+
+  // Keyboard Navigation (Left/Right arrows)
+  document.addEventListener('keydown', (e) => {
+    if (!modal.classList.contains('open')) return;
+    if (e.key === 'ArrowLeft') updateLightboxImage(currentGalleryIndex - 1);
+    if (e.key === 'ArrowRight') updateLightboxImage(currentGalleryIndex + 1);
+  });
 
   function showTestimonialSlide(n){
     if(slides.length === 0) return;
@@ -210,4 +270,15 @@ document.addEventListener('DOMContentLoaded', function(){
       }
     });
   }
+
+    // Toggle Services Accordion on Mobile
+  const servicesToggle = document.querySelector('.services-link');
+  const parentDropdown = document.querySelector('.nav-dropdown');
+
+  servicesToggle.addEventListener('click', function(e) {
+    if (window.innerWidth <= 900) {
+      e.preventDefault(); // Stop from jumping to a page
+      parentDropdown.classList.toggle('active');
+    }
+  });
 });
