@@ -213,6 +213,7 @@ document.addEventListener('DOMContentLoaded', function(){
   const form = document.querySelector('.contact-form');
   if(form){
     form.addEventListener('submit', (e)=>{
+      
       e.preventDefault();
       
       const inputs = form.querySelectorAll('input[required], textarea[required], select[required]');
@@ -228,14 +229,54 @@ document.addEventListener('DOMContentLoaded', function(){
       });
       
       if(valid){
-        // Show success message
-        const msg = document.createElement('div');
-        msg.className = 'form-success';
-        msg.textContent = '✓ Request submitted! We\'ll contact you within 24 hours.';
-        msg.style.cssText = 'background:linear-gradient(135deg,#10b981,#059669);color:#fff;padding:1rem;border-radius:8px;text-align:center;font-weight:600;animation:slideUp 0.4s ease-out;margin-top:1rem';
-        form.parentNode.insertBefore(msg, form.nextSibling);
-        setTimeout(()=>msg.remove(), 5000);
-        form.reset();
+        // 1. Capture the form data
+        const formData = new FormData(form);
+        
+        // 2. Disable button to prevent double-clicks
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if(submitBtn) submitBtn.disabled = true;
+
+        // 3. Send the data in the background
+        fetch(form.action, {
+          method: 'POST',
+          body: formData,
+        })
+        .then(() => {
+          // 4. Success logic: Show your message and reset form
+          const msg = document.createElement('div');
+          msg.className = 'form-success';
+          msg.textContent = '✓ Request submitted! We\'ll contact you within 24 hours.';
+          
+          msg.style.cssText = `
+            background: #10b981;
+            color: #fff;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            width: 100%;
+            box-sizing: border-box;
+          `;
+          
+          form.appendChild(msg); 
+          if(submitBtn) submitBtn.style.display = 'none';
+
+          form.reset();
+          
+          setTimeout(() => {
+            msg.remove();
+            if(submitBtn) {
+              submitBtn.style.display = 'block';
+              submitBtn.disabled = false;
+            }
+          }, 8000);
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Something went wrong. Please try again or call us directly.');
+          if(submitBtn) submitBtn.disabled = false;
+        });
       }
     });
   }

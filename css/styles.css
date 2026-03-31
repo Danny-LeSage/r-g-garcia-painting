@@ -1681,3 +1681,17 @@ p{margin:0 0 0.75rem 0;color:#3a3a3a}
   50%{opacity:1}
   100%{opacity:0;transform:translateY(8px)}
 }
+
+.contact-form .form-success {
+    grid-column: 1 / -1; 
+    width: 100%;
+    margin-top: 1.5rem;
+    box-sizing: border-box;
+    display: block;
+    clear: both;
+}
+
+.contact-form {
+    height: auto !important;
+    overflow: visible;
+}
