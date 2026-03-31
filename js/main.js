@@ -152,6 +152,7 @@ document.addEventListener('DOMContentLoaded', function(){
   // === TESTIMONIALS CAROUSEL ===
   const slides = document.querySelectorAll('.testimonial-card');
   const dots = document.querySelectorAll('.dot');
+  let currentSlide = 0;
   let currentGalleryIndex = 0;
   const galleryImages = Array.from(document.querySelectorAll('.gallery-item img'));
 
@@ -281,4 +282,13 @@ document.addEventListener('DOMContentLoaded', function(){
       parentDropdown.classList.toggle('active');
     }
   });
+
+  // FAQ Accordion Logic
+  document.querySelectorAll('.faq-question').forEach(button => {
+    button.addEventListener('click', () => {
+      const faqItem = button.parentElement;
+      faqItem.classList.toggle('active');
+    });
+  });
+
 });
