@@ -22,13 +22,23 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // === PARALLAX SCROLLING ===
+  function disableHeroParallax() {
+    return window.matchMedia('(max-width: 900px), (hover: none) and (pointer: coarse)').matches;
+  }
+
   function updateParallax() {
     if (!heroBg) return;
+    if (disableHeroParallax()) {
+      heroBg.style.transform = 'none';
+      return;
+    }
     heroBg.style.transform = `translateY(${window.scrollY * 0.5}px)`;
   }
 
   if (heroBg) {
     window.addEventListener('scroll', updateParallax, { passive: true });
+    window.addEventListener('resize', updateParallax, { passive: true });
+    updateParallax();
   }
 
   // === MOBILE NAVIGATION ===
