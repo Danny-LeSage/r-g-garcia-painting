@@ -232,7 +232,12 @@ document.addEventListener('DOMContentLoaded', function () {
         method: 'POST',
         body: formData,
       })
-        .then(() => {
+        .then((response) => response.json())
+        .then((result) => {
+          if (!result || result.result !== 'success') {
+            throw new Error(result && result.error ? String(result.error) : 'Form submission failed');
+          }
+
           const msg = document.createElement('div');
           msg.className = 'form-success';
           msg.textContent = 'Request submitted! We will contact you within 24 hours.';
@@ -263,7 +268,7 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .catch((error) => {
           console.error('Error:', error);
-          alert('Something went wrong. Please try again or call us directly.');
+          alert('The form did not send successfully yet. Please try again after fixing the Apps Script, or call us directly.');
           if (submitBtn) submitBtn.disabled = false;
         });
     });
