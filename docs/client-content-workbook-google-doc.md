@@ -13,7 +13,7 @@ Ask the client to replace any placeholder text with final approved content. If t
 These items are currently shown on the website and should be confirmed before launch:
 
 - Business name: R&G Garcia Painting
-- Phone number: (763) 555-0123
+- Phone number: (612) 723-3772
 - Email: info@rggarciapainting.com
 - Main service area list: Maple Grove, Plymouth, Brooklyn Park, Minnetonka, St. Paul, Minneapolis, and surrounding areas
 - Hours: Monday-Friday 8am-6pm, Saturday 9am-4pm, Sunday closed
