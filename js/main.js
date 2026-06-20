@@ -6,6 +6,12 @@ document.addEventListener('DOMContentLoaded', function () {
   const servicesToggle = document.querySelector('.services-link');
   const parentDropdown = document.querySelector('.nav-dropdown');
 
+  function trackEvent(eventName, params = {}) {
+    if (typeof gtag === 'function') {
+      gtag('event', eventName, params);
+    }
+  }
+
   // === STICKY HEADER SCROLL EFFECT ===
   if (header) {
     window.addEventListener(
@@ -72,6 +78,37 @@ document.addEventListener('DOMContentLoaded', function () {
     if (window.innerWidth > 900) {
       closeMobileNav();
     }
+  });
+
+  // === LEAD TRACKING ===
+  document.querySelectorAll('a[href^="tel:"]').forEach((link) => {
+    link.addEventListener('click', () => {
+      trackEvent('phone_click', {
+        link_text: link.textContent.trim(),
+        link_url: link.getAttribute('href'),
+        page_path: window.location.pathname,
+      });
+    });
+  });
+
+  document.querySelectorAll('a[href^="mailto:"]').forEach((link) => {
+    link.addEventListener('click', () => {
+      trackEvent('email_click', {
+        link_text: link.textContent.trim(),
+        link_url: link.getAttribute('href'),
+        page_path: window.location.pathname,
+      });
+    });
+  });
+
+  document.querySelectorAll('a[href*="#contact"]').forEach((link) => {
+    link.addEventListener('click', () => {
+      trackEvent('quote_click', {
+        link_text: link.textContent.trim(),
+        link_url: link.getAttribute('href'),
+        page_path: window.location.pathname,
+      });
+    });
   });
 
   // === SMOOTH SCROLL ===
@@ -232,10 +269,19 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       });
 
-      if (!valid) return;
+      if (!valid) {
+        trackEvent('form_validation_error', {
+          page_path: window.location.pathname,
+        });
+        return;
+      }
 
       const formData = new FormData(form);
       const submitBtn = form.querySelector('button[type="submit"]');
+      trackEvent('form_submit_attempt', {
+        page_path: window.location.pathname,
+        service: formData.get('service') || '',
+      });
       if (submitBtn) submitBtn.disabled = true;
 
       fetch(form.action, {
@@ -247,6 +293,11 @@ document.addEventListener('DOMContentLoaded', function () {
           if (!result || result.result !== 'success') {
             throw new Error(result && result.error ? String(result.error) : 'Form submission failed');
           }
+
+          trackEvent('form_submit_success', {
+            page_path: window.location.pathname,
+            service: formData.get('service') || '',
+          });
 
           const msg = document.createElement('div');
           msg.className = 'form-success';
@@ -278,6 +329,10 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .catch((error) => {
           console.error('Error:', error);
+          trackEvent('form_submit_failure', {
+            page_path: window.location.pathname,
+            service: formData.get('service') || '',
+          });
           alert('The form did not send successfully yet. Please try again after fixing the Apps Script, or call us directly.');
           if (submitBtn) submitBtn.disabled = false;
         });
