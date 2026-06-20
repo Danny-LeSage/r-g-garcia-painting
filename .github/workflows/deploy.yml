@@ -11,9 +11,21 @@ jobs:
       - uses: actions/checkout@v4
       - name: Setup Pages
         uses: actions/configure-pages@v3
+      - name: Prepare Pages artifact
+        run: |
+          mkdir -p public
+          rsync -av \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='.venv/' \
+            --exclude='docs/' \
+            --exclude='public/' \
+            --exclude='README.md' \
+            --exclude='testimonials backup.html' \
+            ./ public/
       - name: Upload to Pages
         uses: actions/upload-pages-artifact@v1
         with:
-          path: '.'
+          path: 'public'
       - name: Publish
         uses: actions/deploy-pages@v1
