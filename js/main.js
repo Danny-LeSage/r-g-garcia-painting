@@ -6,17 +6,9 @@ document.addEventListener('DOMContentLoaded', function () {
   const servicesToggle = document.querySelector('.services-link');
   const parentDropdown = document.querySelector('.nav-dropdown');
 
-  function trackEvent(eventName, params = {}, callback) {
-    const eventParams = { ...params };
-    if (typeof callback === 'function') {
-      eventParams.event_callback = callback;
-      eventParams.event_timeout = 1000;
-    }
-
+  function trackEvent(eventName, params = {}) {
     if (typeof gtag === 'function') {
-      gtag('event', eventName, eventParams);
-    } else if (typeof callback === 'function') {
-      callback();
+      gtag('event', eventName, params);
     }
   }
 
@@ -302,17 +294,38 @@ document.addEventListener('DOMContentLoaded', function () {
             throw new Error(result && result.error ? String(result.error) : 'Form submission failed');
           }
 
+          trackEvent('form_submit_success', {
+            page_path: window.location.pathname,
+            service: formData.get('service') || '',
+          });
+
+          const msg = document.createElement('div');
+          msg.className = 'form-success';
+          msg.textContent = 'Request submitted! We will contact you within 24 hours.';
+
+          msg.style.cssText = `
+            background: #10b981;
+            color: #fff;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            width: 100%;
+            box-sizing: border-box;
+          `;
+
+          form.appendChild(msg);
+          if (submitBtn) submitBtn.style.display = 'none';
           form.reset();
-          trackEvent(
-            'form_submit_success',
-            {
-              page_path: window.location.pathname,
-              service: formData.get('service') || '',
-            },
-            () => {
-              window.location.assign('thank-you.html');
+
+          setTimeout(() => {
+            msg.remove();
+            if (submitBtn) {
+              submitBtn.style.display = 'block';
+              submitBtn.disabled = false;
             }
-          );
+          }, 8000);
         })
         .catch((error) => {
           console.error('Error:', error);
